@@ -1,0 +1,40 @@
+// This is your Prisma schema file
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model EmailIngestionConfig {
+  id            Int      @id @default(autoincrement())
+  emailAddress  String   @unique
+  connectionType String  // IMAP, POP3, GMAIL_API, OUTLOOK_API
+  username      String?
+  password      String?  // In production, this should be encrypted
+  host         String?
+  port         Int?
+  useSSL       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  active       Boolean  @default(true)
+  
+  // Relation to PDFMetadata
+  pdfMetadata  PDFMetadata[]
+}
+
+model PDFMetadata {
+  id              Int       @id @default(autoincrement())
+  fromAddress     String
+  dateReceived    DateTime
+  subject         String
+  fileName        String
+  localPath       String
+  configId        Int
+  createdAt       DateTime  @default(now())
+  
+  // Relation to EmailIngestionConfig
+  config          EmailIngestionConfig @relation(fields: [configId], references: [id])
+}
